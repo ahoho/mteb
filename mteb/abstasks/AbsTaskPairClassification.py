@@ -18,9 +18,11 @@ class AbsTaskPairClassification(AbsTask):
     def evaluate(self, model, split="test", **kwargs):
         if not self.data_loaded:
             self.load_data()
-
-        data_split = self.dataset[split][0]
-
+        
+        if len(self.dataset[split]) == 1: # artifact of strange way MTEB data is saved
+            data_split = self.dataset[split][0]
+        else:
+            data_split = self.dataset[split]
         logging.getLogger("sentence_transformers.evaluation.PairClassificationEvaluator").setLevel(logging.WARN)
         evaluator = PairClassificationEvaluator(
             data_split["sent1"], data_split["sent2"], data_split["labels"], **kwargs
