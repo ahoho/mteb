@@ -28,12 +28,12 @@ class STS22CrosslingualSTS(AbsTaskSTS, CrosslingualTask):
     def description(self):
         return {
             "name": "STS22",
-            "hf_hub_name": "mteb/sts22-crosslingual-sts",
+            "hf_hub_name": "./data/sts22-crosslingual-sts",  # path is relative to evaluation script
             "description": "SemEval 2022 Task 8: Multilingual News Article Similarity",
             "reference": "https://competitions.codalab.org/competitions/33835",
             "type": "STS",
             "category": "p2p",
-            "eval_splits": ["test"],
+            "eval_splits": ["test", "train"],
             "eval_langs": _LANGUAGES,
             "main_score": "cosine_spearman",
             "min_score": 1,
