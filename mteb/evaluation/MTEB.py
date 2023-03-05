@@ -232,6 +232,9 @@ class MTEB:
                 }
                 for split in task_eval_splits:
                     tick = time()
+                    if split not in task.dataset:
+                        logger.warn(f"WARNING: {split} not found in {task.description['name']} dataset. Skipping.")
+                        continue
                     results = task.evaluate(model, split, **kwargs)
                     tock = time()
                     if kwargs.get("limit") is not None: # identify sampled splits
