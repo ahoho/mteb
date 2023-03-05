@@ -234,6 +234,8 @@ class MTEB:
                     tick = time()
                     results = task.evaluate(model, split, **kwargs)
                     tock = time()
+                    if kwargs.get("limit") is not None: # identify sampled splits
+                        split = f"{split}-{kwargs['limit']}"
                     logger.info(f"Evaluation for {task.description['name']} on {split} took {tock - tick:.2f} seconds")
                     results["evaluation_time"] = round(tock - tick, 2)
                     task_results[split] = results

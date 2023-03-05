@@ -3,6 +3,7 @@ import random
 
 import numpy as np
 import torch
+from sklearn.model_selection import train_test_split
 
 class Evaluator(ABC):
     """
@@ -28,3 +29,12 @@ class Evaluator(ABC):
             the model to evaluate
         """
         pass
+
+    def _matched_random_sample(self, *arrays, size):
+        """
+        Do a random sample without replacement
+        """
+        if size >= len(arrays[0]):
+            return arrays # do nothing
+        splits = train_test_split(*arrays, train_size=size, random_state=self.seed)
+        return [x for i, x in enumerate(splits) if i % 2 == 0]

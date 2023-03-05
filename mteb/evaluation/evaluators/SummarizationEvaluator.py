@@ -24,6 +24,7 @@ class SummarizationEvaluator(Evaluator):
         # texts: (None,)
         super().__init__(**kwargs)
         if limit is not None:
+            # TODO: sample rather than limit
             human_summaries = human_summaries[:limit]
             machine_summaries = machine_summaries[:limit]
             gold_scores = gold_scores[:limit]

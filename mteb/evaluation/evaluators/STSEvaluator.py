@@ -15,9 +15,7 @@ class STSEvaluator(Evaluator):
     def __init__(self, sentences1, sentences2, gold_scores, batch_size=64, limit=None, **kwargs):
         super().__init__(**kwargs)
         if limit is not None:
-            sentences1 = sentences1[:limit]
-            sentences2 = sentences2[:limit]
-            gold_scores = gold_scores[:limit]
+            sentences1, sentences2, gold_scores = self._matched_random_sample(sentences1, sentences2, gold_scores, size=limit)
         self.sentences1 = sentences1
         self.sentences2 = sentences2
         self.gold_scores = gold_scores

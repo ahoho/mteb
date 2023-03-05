@@ -37,7 +37,7 @@ class RerankingEvaluator(Evaluator):
     ):
         super().__init__(**kwargs)
         if limit:
-            samples = samples.train_test_split(limit)["test"]
+            samples = samples.train_test_split(limit, seed=self.seed)["test"]
         self.samples = samples
         self.name = name
         self.mrr_at_k = mrr_at_k

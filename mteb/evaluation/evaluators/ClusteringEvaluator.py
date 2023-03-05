@@ -14,8 +14,7 @@ class ClusteringEvaluator(Evaluator):
     def __init__(self, sentences, labels, clustering_batch_size=500, limit=None, **kwargs):
         super().__init__(**kwargs)
         if limit is not None:
-            sentences = sentences[:limit]
-            labels = labels[:limit]
+            sentences, labels = self._matched_random_sample(sentences, labels, size=limit)
         self.sentences = sentences
         self.labels = labels
         self.clustering_batch_size = clustering_batch_size

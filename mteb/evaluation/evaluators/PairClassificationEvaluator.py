@@ -29,9 +29,7 @@ class PairClassificationEvaluator(Evaluator):
     def __init__(self, sentences1, sentences2, labels, batch_size=32, limit=None, **kwargs):
         super().__init__(**kwargs)
         if limit:
-            sentences1 = sentences1[:limit]
-            sentences2 = sentences2[:limit]
-            labels = labels[:limit]
+            sentences1, sentences2, labels = self._matched_random_sample(sentences1, sentences2, labels, size=limit)
         self.sentences1 = sentences1
         self.sentences2 = sentences2
         self.labels = labels

@@ -19,10 +19,8 @@ class kNNClassificationEvaluator(Evaluator):
     ):
         super().__init__(**kwargs)
         if limit is not None:
-            sentences_train = sentences_train[:limit]
-            y_train = y_train[:limit]
-            sentences_test = sentences_test[:limit]
-            y_test = y_test[:limit]
+            sentences_train, y_train = self._matched_random_sample(sentences_train, sentences_test, size=limit)
+            sentences_test, y_test = self._matched_random_sample(sentences_test, y_test, size=limit)
         self.sentences_train = sentences_train
         self.y_train = y_train
         self.sentences_test = sentences_test
