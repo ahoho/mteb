@@ -32,5 +32,11 @@ class ClusteringEvaluator(Evaluator):
 
         logger.info("Evaluating...")
         v_measure = sklearn.metrics.cluster.v_measure_score(self.labels, cluster_assignment)
+        ari = sklearn.metrics.cluster.adjusted_rand_score(self.labels, cluster_assignment)
+        ami = sklearn.metrics.cluster.adjusted_mutual_info_score(self.labels, cluster_assignment)
 
-        return {"v_measure": v_measure}
+        return {
+            "v_measure": v_measure,
+            "adjusted_rand": ari,
+            "adjusted_mutual_info": ami,
+        }

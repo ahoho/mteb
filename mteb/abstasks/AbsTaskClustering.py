@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 import tqdm
 
@@ -13,12 +15,15 @@ class AbsTaskClustering(AbsTask):
         if not self.data_loaded:
             self.load_data()
 
-        v_measures = []
+        metrics = defaultdict(list)
         for cluster_set in tqdm.tqdm(self.dataset[split], desc="Clustering"):
             evaluator = ClusteringEvaluator(cluster_set["sentences"], cluster_set["labels"], **kwargs)
-            metrics = evaluator(model)
-            v_measures.append(metrics["v_measure"])
-
-        v_mean = np.mean(v_measures)
-        v_std = np.std(v_measures)
-        return {"v_measure": v_mean, "v_measure_std": v_std}
+            result = evaluator(model)
+            for k, v in result.items():
+                metrics[k].append(v)
+        
+        metric_summaries = {}
+        for k, v in metrics.items():
+            metric_summaries[k] = np.mean(v)
+            metric_summaries[f"{k}_std"] = np.std(v)
+        return metric_summaries
