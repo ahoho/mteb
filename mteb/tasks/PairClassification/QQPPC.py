@@ -6,13 +6,13 @@ class QQPPC(AbsTaskPairClassification):
     @property
     def description(self):
         return {
-            "name": "QQPPC",
+            "name": "QQP",
             "hf_hub_name": "glue/qqp",
             "description": "Quora Question Pairs",
-            "reference": "https://github.com/google-research-datasets/paws",
+            "reference": "https://quoradata.quora.com/First-Quora-Dataset-Release-Question-Pairs",
             "category": "s2s",
             "type": "PairClassification",
-            "eval_splits": ["train", "test"],
+            "eval_splits": ["train", "validation", "test"],
             "eval_langs": ["en"],
             "main_score": "ap",
         }
