@@ -232,7 +232,10 @@ class MTEB:
                 }
                 for split in task_eval_splits:
                     tick = time()
-                    if split not in task.dataset:
+                    splits = task.dataset.keys()
+                    if task.is_crosslingual:
+                        splits = [k for lang in task.langs for k in task.dataset[lang]]
+                    if split not in splits:
                         logger.warn(f"WARNING: {split} not found in {task.description['name']} dataset. Skipping.")
                         continue
                     results = task.evaluate(model, split, **kwargs)
