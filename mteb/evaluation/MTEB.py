@@ -192,6 +192,7 @@ class MTEB:
             Folder where the results will be saved
         :return: Returns a dictionary of task names and corresponding metrics results.
         """
+        is_generation_model = hasattr(model, "_generated")
         # Set logging
         if verbosity < 2:
             datasets.logging.set_verbosity(40)
@@ -230,7 +231,13 @@ class MTEB:
                     "dataset_revision": task.description.get("revision", None),
                     "mteb_dataset_name": task.description['name'],
                 }
+                generations = {}
+                completed_one_split = False
                 for split in task_eval_splits:
+
+                    if is_generation_model:
+                        model._generated = {}  # empty cache
+                    
                     tick = time()
                     splits = task.dataset.keys()
                     if task.is_crosslingual:
@@ -245,13 +252,21 @@ class MTEB:
                     logger.info(f"Evaluation for {task.description['name']} on {split} took {tock - tick:.2f} seconds")
                     results["evaluation_time"] = round(tock - tick, 2)
                     task_results[split] = results
+                    if is_generation_model:
+                        generations[split] = model._generated
+                    
                     if verbosity >= 1:
                         logger.info(f"Scores: {results}")
 
+                    completed_one_split = True
+
                 # save results
-                if output_folder is not None:
+                if output_folder is not None and completed_one_split:
                     with open(save_path, "w") as f_out:
                         json.dump(task_results, f_out, indent=2, sort_keys=True)
+                    if is_generation_model:
+                        with open(save_path.replace(".json", "_generations.json"), "w") as f_out:
+                            json.dump(generations, f_out, indent=2, sort_keys=True)
 
                 evaluation_results[task.description['name']] = task_results
 
