@@ -9,6 +9,7 @@ from scipy.stats import pearsonr, spearmanr
 logger = logging.getLogger(__name__)
 
 from .Evaluator import Evaluator
+from .set_distances import compute_all_set_distances
 
 
 class STSEvaluator(Evaluator):
@@ -23,35 +24,48 @@ class STSEvaluator(Evaluator):
 
     def __call__(self, model):
         logger.info(f"Encoding {len(self.sentences1)} sentences1...")
-        embeddings1 = np.asarray(model.encode(self.sentences1, batch_size=self.batch_size))
+        embeddings1 = model.encode(self.sentences1, batch_size=self.batch_size)
         logger.info(f"Encoding {len(self.sentences2)} sentences2...")
-        embeddings2 = np.asarray(model.encode(self.sentences2, batch_size=self.batch_size))
+        embeddings2 = model.encode(self.sentences2, batch_size=self.batch_size)
 
-        logger.info("Evaluating...")
-        cosine_scores = 1 - (paired_cosine_distances(embeddings1, embeddings2))
-        manhattan_distances = -paired_manhattan_distances(embeddings1, embeddings2)
-        euclidean_distances = -paired_euclidean_distances(embeddings1, embeddings2)
+        if getattr(model, "output_combination_strategy") != "list_embeds":
+            embeddings1 = np.asarray(embeddings1)
+            embeddings2 = np.asarray(embeddings2)
 
-        cosine_pearson, _ = pearsonr(self.gold_scores, cosine_scores)
-        cosine_spearman, _ = spearmanr(self.gold_scores, cosine_scores)
+            logger.info("Evaluating...")
+            cosine_scores = 1 - (paired_cosine_distances(embeddings1, embeddings2))
+            manhattan_distances = -paired_manhattan_distances(embeddings1, embeddings2)
+            euclidean_distances = -paired_euclidean_distances(embeddings1, embeddings2)
 
-        manhatten_pearson, _ = pearsonr(self.gold_scores, manhattan_distances)
-        manhatten_spearman, _ = spearmanr(self.gold_scores, manhattan_distances)
+            cosine_pearson, _ = pearsonr(self.gold_scores, cosine_scores)
+            cosine_spearman, _ = spearmanr(self.gold_scores, cosine_scores)
 
-        euclidean_pearson, _ = pearsonr(self.gold_scores, euclidean_distances)
-        euclidean_spearman, _ = spearmanr(self.gold_scores, euclidean_distances)
+            manhatten_pearson, _ = pearsonr(self.gold_scores, manhattan_distances)
+            manhatten_spearman, _ = spearmanr(self.gold_scores, manhattan_distances)
 
-        return {
-            "cos_sim": {
-                "pearson": cosine_pearson,
-                "spearman": cosine_spearman,
-            },
-            "manhattan": {
-                "pearson": manhatten_pearson,
-                "spearman": manhatten_spearman,
-            },
-            "euclidean": {
-                "pearson": euclidean_pearson,
-                "spearman": euclidean_spearman,
-            },
-        }
+            euclidean_pearson, _ = pearsonr(self.gold_scores, euclidean_distances)
+            euclidean_spearman, _ = spearmanr(self.gold_scores, euclidean_distances)
+
+            return {
+                "cos_sim": {
+                    "pearson": cosine_pearson,
+                    "spearman": cosine_spearman,
+                },
+                "manhattan": {
+                    "pearson": manhatten_pearson,
+                    "spearman": manhatten_spearman,
+                },
+                "euclidean": {
+                    "pearson": euclidean_pearson,
+                    "spearman": euclidean_spearman,
+                },
+            }
+        else:
+            set_distances = compute_all_set_distances(embeddings1, embeddings2)
+            metrics = {}
+            for k, v in set_distances.items():
+                metrics[k] = {
+                    "pearson": pearsonr(self.gold_scores, v)[0],
+                    "spearman": spearmanr(self.gold_scores, v)[0],
+                }
+            return metrics

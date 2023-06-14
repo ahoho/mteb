@@ -5,7 +5,7 @@ from sklearn.metrics import average_precision_score
 from sklearn.metrics.pairwise import paired_cosine_distances, paired_euclidean_distances, paired_manhattan_distances
 
 from .Evaluator import Evaluator
-
+from .set_distances import compute_all_set_distances
 
 logger = logging.getLogger(__name__)
 
@@ -60,25 +60,31 @@ class PairClassificationEvaluator(Evaluator):
         embeddings1 = [emb_dict[sent] for sent in self.sentences1]
         embeddings2 = [emb_dict[sent] for sent in self.sentences2]
 
-        logger.info("Computing similarity distances...")
-        cosine_scores = 1 - paired_cosine_distances(embeddings1, embeddings2)
-        manhattan_distances = paired_manhattan_distances(embeddings1, embeddings2)
-        euclidean_distances = paired_euclidean_distances(embeddings1, embeddings2)
+        if getattr(model, "output_combination_strategy") != "list_embeds":
+            logger.info("Computing similarity distances...")
+            cosine_scores = 1 - paired_cosine_distances(embeddings1, embeddings2)
+            manhattan_distances = paired_manhattan_distances(embeddings1, embeddings2)
+            euclidean_distances = paired_euclidean_distances(embeddings1, embeddings2)
 
-        embeddings1_np = np.asarray(embeddings1)
-        embeddings2_np = np.asarray(embeddings2)
-        dot_scores = [np.dot(embeddings1_np[i], embeddings2_np[i]) for i in range(len(embeddings1_np))]
+            embeddings1_np = np.asarray(embeddings1)
+            embeddings2_np = np.asarray(embeddings2)
+            dot_scores = [np.dot(embeddings1_np[i], embeddings2_np[i]) for i in range(len(embeddings1_np))]
 
-        logger.info("Computing metrics...")
-        labels = np.asarray(self.labels)
-        output_scores = {}
-        for short_name, name, scores, reverse in [
-            ["cos_sim", "Cosine-Similarity", cosine_scores, True],
-            ["manhattan", "Manhattan-Distance", manhattan_distances, False],
-            ["euclidean", "Euclidean-Distance", euclidean_distances, False],
-            ["dot", "Dot-Product", dot_scores, True],
-        ]:
-            output_scores[short_name] = self._compute_metrics(scores, labels, reverse)
+            logger.info("Computing metrics...")
+            labels = np.asarray(self.labels)
+            output_scores = {}
+            for short_name, name, scores, reverse in [
+                ["cos_sim", "Cosine-Similarity", cosine_scores, True],
+                ["manhattan", "Manhattan-Distance", manhattan_distances, False],
+                ["euclidean", "Euclidean-Distance", euclidean_distances, False],
+                ["dot", "Dot-Product", dot_scores, True],
+            ]:
+                output_scores[short_name] = self._compute_metrics(scores, labels, reverse)
+        else:
+            logger.info("Computing set distances...")
+            output_scores = compute_all_set_distances(embeddings1, embeddings2)
+            for k, v in output_scores.items():
+                output_scores[k] = self._compute_metrics(v, self.labels, True)
 
         return output_scores
 
