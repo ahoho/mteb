@@ -6,7 +6,7 @@ class SemEvalArgSimPC(AbsTaskPairClassification):
     def description(self):
         return {
             "name": "SemEvalArgSimPC",
-            "hf_hub_name": "/fs/clip-political/rupak/beliefs/embed-gen/data/pairwise_files/semeval16_task6/", # path is relative to evaluation script
+            "hf_hub_name": "./data/pairwise_files/semeval16_task6", # path is relative to evaluation script
             "description": "Tagged Arguments from argument similarity datasets.",
             "reference": "https://alt.qcri.org/semeval2015/task1/",
             "category": "s2s",
