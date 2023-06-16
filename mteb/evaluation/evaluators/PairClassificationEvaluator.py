@@ -59,8 +59,7 @@ class PairClassificationEvaluator(Evaluator):
         emb_dict = {sent: emb for sent, emb in zip(sentences, embeddings)}
         embeddings1 = [emb_dict[sent] for sent in self.sentences1]
         embeddings2 = [emb_dict[sent] for sent in self.sentences2]
-
-        if getattr(model, "output_combination_strategy") != "list_embeds":
+        if getattr(model, "output_combination_strategy", None) != "list_embeds":
             logger.info("Computing similarity distances...")
             cosine_scores = 1 - paired_cosine_distances(embeddings1, embeddings2)
             manhattan_distances = paired_manhattan_distances(embeddings1, embeddings2)

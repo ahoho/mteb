@@ -28,7 +28,7 @@ class STSEvaluator(Evaluator):
         logger.info(f"Encoding {len(self.sentences2)} sentences2...")
         embeddings2 = model.encode(self.sentences2, batch_size=self.batch_size)
 
-        if getattr(model, "output_combination_strategy") != "list_embeds":
+        if getattr(model, "output_combination_strategy", None) != "list_embeds":
             embeddings1 = np.asarray(embeddings1)
             embeddings2 = np.asarray(embeddings2)
 
