@@ -10,3 +10,5 @@ from .STS22CrosslingualSTS import *
 from .STSBenchmarkSTS import *
 from .FullTwitterSemEval2015STS import *
 from .BWSArgSTS import *
+from .ArgFacetSTS import *
+from .UKPArgAspectSTS import *
