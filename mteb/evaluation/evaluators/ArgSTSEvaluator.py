@@ -1,0 +1,64 @@
+import logging
+
+import numpy as np
+from sklearn.metrics.pairwise import paired_cosine_distances, paired_euclidean_distances, paired_manhattan_distances
+
+from scipy.stats import pearsonr, spearmanr
+
+
+logger = logging.getLogger(__name__)
+
+from .Evaluator import Evaluator
+
+
+class ArgSTSEvaluator(Evaluator):
+    def __init__(self, sentences1, sentences2, topics, gold_scores, batch_size=64, limit=None, **kwargs):
+        super().__init__(**kwargs)
+        if limit is not None:
+            sentences1, sentences2, gold_scores = self._matched_random_sample(sentences1, sentences2, topics, gold_scores, size=limit)
+        self.sentences1 = sentences1
+        self.sentences2 = sentences2
+        self.topics = topics
+        self.gold_scores = gold_scores
+        self.batch_size = batch_size
+
+    def __call__(self, model):
+        logger.info(f"Encoding {len(self.sentences1)} sentences1...")
+        try:
+            embeddings1 = np.asarray(model.encode(self.sentences1, topics=self.topics, batch_size=self.batch_size))
+        except TypeError:
+            embeddings1 = np.asarray(model.encode(self.sentences1, batch_size=self.batch_size))
+        logger.info(f"Encoding {len(self.sentences2)} sentences2...")
+        try:
+            embeddings2 = np.asarray(model.encode(self.sentences2, topics=self.topics, batch_size=self.batch_size))
+        except TypeError:
+            embeddings2 = np.asarray(model.encode(self.sentences2, batch_size=self.batch_size))
+
+        logger.info("Evaluating...")
+        cosine_scores = 1 - (paired_cosine_distances(embeddings1, embeddings2))
+        manhattan_distances = -paired_manhattan_distances(embeddings1, embeddings2)
+        euclidean_distances = -paired_euclidean_distances(embeddings1, embeddings2)
+
+        cosine_pearson, _ = pearsonr(self.gold_scores, cosine_scores)
+        cosine_spearman, _ = spearmanr(self.gold_scores, cosine_scores)
+
+        manhatten_pearson, _ = pearsonr(self.gold_scores, manhattan_distances)
+        manhatten_spearman, _ = spearmanr(self.gold_scores, manhattan_distances)
+
+        euclidean_pearson, _ = pearsonr(self.gold_scores, euclidean_distances)
+        euclidean_spearman, _ = spearmanr(self.gold_scores, euclidean_distances)
+
+        return {
+            "cos_sim": {
+                "pearson": cosine_pearson,
+                "spearman": cosine_spearman,
+            },
+            "manhattan": {
+                "pearson": manhatten_pearson,
+                "spearman": manhatten_spearman,
+            },
+            "euclidean": {
+                "pearson": euclidean_pearson,
+                "spearman": euclidean_spearman,
+            },
+        }

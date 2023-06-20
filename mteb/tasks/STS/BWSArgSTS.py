@@ -1,9 +1,9 @@
 import datasets
 
-from ...abstasks.AbsTaskSTS import AbsTaskSTS
+from ...abstasks.AbsTaskArgSTS import AbsTaskArgSTS
 
 
-class BWSArgSTS(AbsTaskSTS):
+class BWSArgSTS(AbsTaskArgSTS):
     @property
     def description(self):
         return {
@@ -19,22 +19,3 @@ class BWSArgSTS(AbsTaskSTS):
             "min_score": 0,
             "max_score": 1,
         }
-        
-    def load_data(self, **kwargs):
-        if self.data_loaded:
-            return
-
-        self.dataset = datasets.load_dataset(
-            self.description["hf_hub_name"], 
-            revision=self.description.get("revision", None)
-        )
-
-        # add the topic to the start of each sentence in the pair
-        self.dataset = self.dataset.map(
-            lambda x: {
-                "sent1": f"[Topic: {x['topic'].lower()}] {x['sent1']}",
-                "sent2": f"[Topic: {x['topic'].lower()}] {x['sent2']}",
-            }
-        )
-
-        self.data_loaded = True
